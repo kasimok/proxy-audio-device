@@ -3829,6 +3829,11 @@ Boolean ProxyAudioDevice::HasControlProperty(AudioServerPlugInDriverRef inDriver
     //    check the arguments
     FailIf(inDriver != gAudioServerPlugInDriverRef, Done, "HasControlProperty: bad driver reference");
     FailIf(inAddress == NULL, Done, "HasControlProperty: no address");
+    
+    // TODO: remove this debug only code
+    if (inObjectID == kObjectID_Volume_Input_Master || inObjectID == kObjectID_Mute_Input_Master) {
+        DebugMsg("DBG:HasControlProperty checking input control properties.");
+    }
 
     //    Note that for each object, this driver implements all the required properties plus a few
     //    extras that are useful but not required. There is more detailed commentary about each
@@ -3913,6 +3918,11 @@ OSStatus ProxyAudioDevice::IsControlPropertySettable(AudioServerPlugInDriverRef 
                    theAnswer = kAudioHardwareIllegalOperationError,
                    Done,
                    "IsControlPropertySettable: no place to put the return value");
+    
+    // TODO: remove this debug only code
+    if (inObjectID == kObjectID_Volume_Input_Master || inObjectID == kObjectID_Mute_Input_Master) {
+        DebugMsg("DBG:IsControlPropertySettable: checking input control properties.");
+    }
 
     //    Note that for each object, this driver implements all the required properties plus a few
     //    extras that are useful but not required. There is more detailed commentary about each
@@ -3934,6 +3944,7 @@ OSStatus ProxyAudioDevice::IsControlPropertySettable(AudioServerPlugInDriverRef 
                     *outIsSettable = false;
                     break;
 
+                // Only permits settings for volume's scalar and decible value.
                 case kAudioLevelControlPropertyScalarValue:
                 case kAudioLevelControlPropertyDecibelValue:
                     *outIsSettable = true;
@@ -4244,7 +4255,11 @@ OSStatus ProxyAudioDevice::GetControlPropertyData(AudioServerPlugInDriverRef inD
                                    Done,
                                    "GetControlPropertyData: not enough space for the return value of "
                                    "kAudioControlPropertyScope for the volume control");
-                    *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeOutput;
+                    if (inObjectID == kObjectID_Volume_Input_Master) {
+                        *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeInput;
+                    }else{
+                        *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeOutput;
+                    }
                     *outDataSize = sizeof(AudioObjectPropertyScope);
                     break;
 
@@ -4255,7 +4270,11 @@ OSStatus ProxyAudioDevice::GetControlPropertyData(AudioServerPlugInDriverRef inD
                                    Done,
                                    "GetControlPropertyData: not enough space for the return value of "
                                    "kAudioControlPropertyElement for the volume control");
-                    *((AudioObjectPropertyElement *)outData) = (inObjectID == kObjectID_Volume_Output_L) ? 1 : 2;
+                    if (inObjectID == kObjectID_Volume_Input_Master){
+                        *((AudioObjectPropertyElement *)outData) = kAudioObjectPropertyElementMain;
+                    }else{
+                        *((AudioObjectPropertyElement *)outData) = (inObjectID == kObjectID_Volume_Output_L) ? 1 : 2;
+                    }
                     *outDataSize = sizeof(AudioObjectPropertyElement);
                     break;
 
@@ -4425,7 +4444,12 @@ OSStatus ProxyAudioDevice::GetControlPropertyData(AudioServerPlugInDriverRef inD
                                    Done,
                                    "GetControlPropertyData: not enough space for the return value of "
                                    "kAudioControlPropertyScope for the mute control");
-                    *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeOutput;
+                    if (inObjectID == kObjectID_Mute_Input_Master){
+                        *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeInput;
+                    }else{
+                        *((AudioObjectPropertyScope *)outData) = kAudioObjectPropertyScopeOutput;
+                    }
+                    
                     *outDataSize = sizeof(AudioObjectPropertyScope);
                     break;
 
