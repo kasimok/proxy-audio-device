@@ -96,6 +96,8 @@ ProxyAudioDevice *ProxyAudioDevice::deviceForDriver(void *inDriver) {
 }
 
 HRESULT ProxyAudioDevice::ProxyAudio_QueryInterface(void *inDriver, REFIID inUUID, LPVOID *outInterface) {
+	DebugMsg("DBG/COM: ProxyAudio_QueryInterface");
+
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -106,6 +108,7 @@ HRESULT ProxyAudioDevice::ProxyAudio_QueryInterface(void *inDriver, REFIID inUUI
 }
 
 ULONG ProxyAudioDevice::ProxyAudio_AddRef(void *inDriver) {
+	DebugMsg("DBG/COM: ProxyAudio_AddRef");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -116,6 +119,7 @@ ULONG ProxyAudioDevice::ProxyAudio_AddRef(void *inDriver) {
 }
 
 ULONG ProxyAudioDevice::ProxyAudio_Release(void *inDriver) {
+	DebugMsg("DBG/COM: ProxyAudio_Release");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -126,6 +130,7 @@ ULONG ProxyAudioDevice::ProxyAudio_Release(void *inDriver) {
 }
 
 OSStatus ProxyAudioDevice::ProxyAudio_Initialize(AudioServerPlugInDriverRef inDriver, AudioServerPlugInHostRef inHost) {
+	DebugMsg("DBG/COM: ProxyAudio_Initialize");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -139,6 +144,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_CreateDevice(AudioServerPlugInDriverRef in
                                                    CFDictionaryRef inDescription,
                                                    const AudioServerPlugInClientInfo *inClientInfo,
                                                    AudioObjectID *outDeviceObjectID) {
+	DebugMsg("DBG/COM: ProxyAudio_CreateDevice");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -150,6 +156,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_CreateDevice(AudioServerPlugInDriverRef in
 
 OSStatus ProxyAudioDevice::ProxyAudio_DestroyDevice(AudioServerPlugInDriverRef inDriver,
                                                     AudioObjectID inDeviceObjectID) {
+	DebugMsg("DBG/COM: ProxyAudio_DestroyDevice");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -162,6 +169,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_DestroyDevice(AudioServerPlugInDriverRef i
 OSStatus ProxyAudioDevice::ProxyAudio_AddDeviceClient(AudioServerPlugInDriverRef inDriver,
                                                       AudioObjectID inDeviceObjectID,
                                                       const AudioServerPlugInClientInfo *inClientInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_AddDeviceClient");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -174,6 +182,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_AddDeviceClient(AudioServerPlugInDriverRef
 OSStatus ProxyAudioDevice::ProxyAudio_RemoveDeviceClient(AudioServerPlugInDriverRef inDriver,
                                                          AudioObjectID inDeviceObjectID,
                                                          const AudioServerPlugInClientInfo *inClientInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_RemoveDeviceClient");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -187,6 +196,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_PerformDeviceConfigurationChange(AudioServ
                                                                        AudioObjectID inDeviceObjectID,
                                                                        UInt64 inChangeAction,
                                                                        void *inChangeInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_PerformDeviceConfigurationChange");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -200,6 +210,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_AbortDeviceConfigurationChange(AudioServer
                                                                      AudioObjectID inDeviceObjectID,
                                                                      UInt64 inChangeAction,
                                                                      void *inChangeInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_AbortDeviceConfigurationChange");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -213,6 +224,7 @@ Boolean ProxyAudioDevice::ProxyAudio_HasProperty(AudioServerPlugInDriverRef inDr
                                                  AudioObjectID inObjectID,
                                                  pid_t inClientProcessID,
                                                  const AudioObjectPropertyAddress *inAddress) {
+	DebugMsg("DBG/COM: ProxyAudio_HasProperty|inObjectID:%u|mSelector: %.4s|mScope: %.4s", inObjectID, (char *)(&inAddress->mSelector), (char *)(&inAddress->mScope));
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -227,6 +239,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_IsPropertySettable(AudioServerPlugInDriver
                                                          pid_t inClientProcessID,
                                                          const AudioObjectPropertyAddress *inAddress,
                                                          Boolean *outIsSettable) {
+	DebugMsg("DBG/COM: ProxyAudio_IsPropertySettable|inObjectID:%u|mSelector: %.4s|mScope: %.4s", inObjectID, (char *)(&inAddress->mSelector), (char *)(&inAddress->mScope));
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -243,6 +256,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_GetPropertyDataSize(AudioServerPlugInDrive
                                                           UInt32 inQualifierDataSize,
                                                           const void *inQualifierData,
                                                           UInt32 *outDataSize) {
+	DebugMsg("DBG/COM: ProxyAudio_GetPropertyDataSize|inObjectID:%u|mSelector: %.4s|mScope: %.4s",inObjectID, (char *)(&inAddress->mSelector), (char *)(&inAddress->mScope));
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -262,6 +276,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_GetPropertyData(AudioServerPlugInDriverRef
                                                       UInt32 inDataSize,
                                                       UInt32 *outDataSize,
                                                       void *outData) {
+	DebugMsg("DBG/COM: ProxyAudio_GetPropertyData|inObjectID:%u|mSelector: %.4s|mScope: %.4s",inObjectID, (char *)(&inAddress->mSelector), (char *)(&inAddress->mScope));
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -287,6 +302,8 @@ OSStatus ProxyAudioDevice::ProxyAudio_SetPropertyData(AudioServerPlugInDriverRef
                                                       const void *inQualifierData,
                                                       UInt32 inDataSize,
                                                       const void *inData) {
+	DebugMsg("DBG/COM: ProxyAudio_SetPropertyData|inObjectID:%u|mSelector: %.4s|mScope: %.4s",inObjectID, (char *)(&inAddress->mSelector), (char *)(&inAddress->mScope));
+
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -300,6 +317,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_SetPropertyData(AudioServerPlugInDriverRef
 OSStatus ProxyAudioDevice::ProxyAudio_StartIO(AudioServerPlugInDriverRef inDriver,
                                               AudioObjectID inDeviceObjectID,
                                               UInt32 inClientID) {
+	DebugMsg("DBG/COM: ProxyAudio_StartIO");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -312,6 +330,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_StartIO(AudioServerPlugInDriverRef inDrive
 OSStatus ProxyAudioDevice::ProxyAudio_StopIO(AudioServerPlugInDriverRef inDriver,
                                              AudioObjectID inDeviceObjectID,
                                              UInt32 inClientID) {
+	DebugMsg("DBG/COM: ProxyAudio_StopIO");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -327,6 +346,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_GetZeroTimeStamp(AudioServerPlugInDriverRe
                                                        Float64 *outSampleTime,
                                                        UInt64 *outHostTime,
                                                        UInt64 *outSeed) {
+	DebugMsg("DBG/COM: ProxyAudio_GetZeroTimeStamp");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -342,6 +362,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_WillDoIOOperation(AudioServerPlugInDriverR
                                                         UInt32 inOperationID,
                                                         Boolean *outWillDo,
                                                         Boolean *outWillDoInPlace) {
+	DebugMsg("DBG/COM: ProxyAudio_WillDoIOOperation");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -358,6 +379,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_BeginIOOperation(AudioServerPlugInDriverRe
                                                        UInt32 inOperationID,
                                                        UInt32 inIOBufferFrameSize,
                                                        const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_BeginIOOperation");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -377,6 +399,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_DoIOOperation(AudioServerPlugInDriverRef i
                                                     const AudioServerPlugInIOCycleInfo *inIOCycleInfo,
                                                     void *ioMainBuffer,
                                                     void *ioSecondaryBuffer) {
+	DebugMsg("DBG/COM: ProxyAudio_DoIOOperation");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
@@ -400,6 +423,7 @@ OSStatus ProxyAudioDevice::ProxyAudio_EndIOOperation(AudioServerPlugInDriverRef 
                                                      UInt32 inOperationID,
                                                      UInt32 inIOBufferFrameSize,
                                                      const AudioServerPlugInIOCycleInfo *inIOCycleInfo) {
+	DebugMsg("DBG/COM: ProxyAudio_EndIOOperation");
     ProxyAudioDevice *device = ProxyAudioDevice::deviceForDriver(inDriver);
 
     if (!device) {
