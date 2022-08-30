@@ -12,14 +12,19 @@
 class AudioRingBuffer;
 
 enum {
-    kObjectID_PlugIn = kAudioObjectPlugInObject,
-    kObjectID_Box = 2,
-    kObjectID_Device = 3,
-    kObjectID_Stream_Output = 4,
-    kObjectID_Volume_Output_L = 5,
-    kObjectID_Volume_Output_R = 6,
-    kObjectID_Mute_Output_Master = 7,
-    kObjectID_DataSource_Output_Master = 8
+    kObjectID_PlugIn                      = kAudioObjectPlugInObject,
+    kObjectID_Box                         = 2,
+    kObjectID_Device                      = 3,
+    
+    kObjectID_Stream_Input                = 4,
+    kObjectID_Volume_Input_Master         = 5,
+    kObjectID_Mute_Input_Master           = 6,
+    
+    kObjectID_Stream_Output               = 7,
+    kObjectID_Volume_Output_L             = 8,
+    kObjectID_Volume_Output_R             = 9,
+    kObjectID_Mute_Output_Master          = 10,
+    kObjectID_DataSource_Output_Master    = 11
 };
 
 #define kPlugIn_BundleID "net.briankendall.ProxyAudioDevice"
@@ -511,11 +516,14 @@ class ProxyAudioDevice {
     Float64 gDevice_ElapsedTicks = 0.0;
     UInt64 gDevice_AnchorHostTime = 0;
     bool gStream_Output_IsActive = true;
+    bool gStream_Input_IsActive = true;
     const Float32 kVolume_MinDB = -25.0;
     const Float32 kVolume_MaxDB = 0.0;
     Float32 gVolume_Output_L_Value = 0.0;
     Float32 gVolume_Output_R_Value = 0.0;
+    Float32 gVolume_Input_Value = 0.0;
     bool gMute_Output_Mute = false;
+    bool gMute_Input_Mute = false;
     const UInt32 gDevice_BytesPerFrameInChannel = 4;
     const UInt32 gDevice_ChannelsPerFrame = 2;
     const UInt32 gDevice_SafetyOffset = 0;
