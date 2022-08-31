@@ -1166,6 +1166,8 @@ OSStatus ProxyAudioDevice::SetPropertyData(AudioServerPlugInDriverRef inDriver,
                                               theChangedAddresses);
             break;
 
+        case kObjectID_Volume_Input_Master:
+        case kObjectID_Mute_Input_Master:
         case kObjectID_Volume_Output_L:
         case kObjectID_Volume_Output_R:
         case kObjectID_Mute_Output_Master:
