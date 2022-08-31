@@ -4687,6 +4687,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
                                 outChangedAddresses[1].mSelector = kAudioLevelControlPropertyDecibelValue;
                                 outChangedAddresses[1].mScope = kAudioObjectPropertyScopeGlobal;
                                 outChangedAddresses[1].mElement = 1;
+                                DebugMsg("DBG|gVolume_Input_Value set to %f", gVolume_Input_Value);
                             }
                         }
                     }
@@ -4746,6 +4747,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
                                 outChangedAddresses[1].mSelector = kAudioLevelControlPropertyDecibelValue;
                                 outChangedAddresses[1].mScope = kAudioObjectPropertyScopeGlobal;
                                 outChangedAddresses[1].mElement = 1;
+                                DebugMsg("DBG|gVolume_Input_Value set to %f", gVolume_Input_Value);
                             }
                         }
                     }
@@ -4757,6 +4759,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
             };
             break;
 
+        case kObjectID_Mute_Input_Master:
         case kObjectID_Mute_Output_Master:
             switch (inAddress->mSelector) {
                 case kAudioBooleanControlPropertyValue:
@@ -4774,6 +4777,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
                                 outChangedAddresses[0].mSelector = kAudioBooleanControlPropertyValue;
                                 outChangedAddresses[0].mScope = kAudioObjectPropertyScopeGlobal;
                                 outChangedAddresses[0].mElement = kAudioObjectPropertyElementMaster;
+                                DebugMsg("DBG|gMute_Input_Mute set to %d", gMute_Input_Mute);
                             }
                         
                         }else{
@@ -4783,6 +4787,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
                                 outChangedAddresses[0].mSelector = kAudioBooleanControlPropertyValue;
                                 outChangedAddresses[0].mScope = kAudioObjectPropertyScopeGlobal;
                                 outChangedAddresses[0].mElement = kAudioObjectPropertyElementMaster;
+                                DebugMsg("DBG|gMute_Output_Mute set to %d", gMute_Output_Mute);
                             }
                         }
                        
