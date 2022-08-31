@@ -3825,15 +3825,11 @@ Boolean ProxyAudioDevice::HasControlProperty(AudioServerPlugInDriverRef inDriver
 
     //    declare the local variables
     Boolean theAnswer = false;
-    return false;
     //    check the arguments
     FailIf(inDriver != gAudioServerPlugInDriverRef, Done, "HasControlProperty: bad driver reference");
     FailIf(inAddress == NULL, Done, "HasControlProperty: no address");
-    
-    // TODO: remove this debug only code
-    if (inObjectID == kObjectID_Volume_Input_Master || inObjectID == kObjectID_Mute_Input_Master) {
-        DebugMsg("DBG:HasControlProperty checking input control properties.");
-    }
+        
+    DebugMsg("DBG/ProxyAudioDevice::HasControlProperty|inObjectID: %d|mSelector: %.4s", inObjectID, (char *)(&inAddress->mSelector));
 
     //    Note that for each object, this driver implements all the required properties plus a few
     //    extras that are useful but not required. There is more detailed commentary about each
@@ -3901,6 +3897,7 @@ OSStatus ProxyAudioDevice::IsControlPropertySettable(AudioServerPlugInDriverRef 
     //    changed.
 
 #pragma unused(inClientProcessID)
+    DebugMsg("DBG/ProxyAudioDevice::IsControlPropertySettable|inObjectID: %d|mSelector: %.4s", inObjectID, (char *)(&inAddress->mSelector));
 
     //    declare the local variables
     OSStatus theAnswer = 0;
@@ -3919,11 +3916,6 @@ OSStatus ProxyAudioDevice::IsControlPropertySettable(AudioServerPlugInDriverRef 
                    Done,
                    "IsControlPropertySettable: no place to put the return value");
     
-    // TODO: remove this debug only code
-    if (inObjectID == kObjectID_Volume_Input_Master || inObjectID == kObjectID_Mute_Input_Master) {
-        DebugMsg("DBG:IsControlPropertySettable: checking input control properties.");
-    }
-
     //    Note that for each object, this driver implements all the required properties plus a few
     //    extras that are useful but not required. There is more detailed commentary about each
     //    property in the GetControlPropertyData() method.
@@ -4014,7 +4006,10 @@ OSStatus ProxyAudioDevice::GetControlPropertyDataSize(AudioServerPlugInDriverRef
     //    This method returns the byte size of the property's data.
 
 #pragma unused(inClientProcessID, inQualifierDataSize, inQualifierData)
+    DebugMsg("DBG/ProxyAudioDevice::GetControlPropertyDataSize|inObjectID: %d|mSelector: %.4s", inObjectID, (char *)(&inAddress->mSelector));
 
+    
+    
     //    declare the local variables
     OSStatus theAnswer = 0;
 
@@ -4180,6 +4175,9 @@ OSStatus ProxyAudioDevice::GetControlPropertyData(AudioServerPlugInDriverRef inD
 #pragma unused(inClientProcessID)
 #pragma unused(inQualifierDataSize)
 #pragma unused(inQualifierData)
+    
+    DebugMsg("DBG/ProxyAudioDevice::GetControlPropertyData|inObjectID: %d|mSelector: %.4s", inObjectID, (char *)(&inAddress->mSelector));
+
 
     //    declare the local variables
     OSStatus theAnswer = 0;
@@ -4578,7 +4576,7 @@ OSStatus ProxyAudioDevice::SetControlPropertyData(AudioServerPlugInDriverRef inD
                                                   UInt32 *outNumberPropertiesChanged,
                                                   AudioObjectPropertyAddress outChangedAddresses[2]) {
 #pragma unused(inClientProcessID, inQualifierDataSize, inQualifierData)
-
+    DebugMsg("DBG/ProxyAudioDevice::SetControlPropertyData|inObjectID: %d|mSelector: %.4s", inObjectID, (char *)(&inAddress->mSelector));
     //    declare the local variables
     OSStatus theAnswer = 0;
     Float32 theNewVolume;
