@@ -2779,6 +2779,7 @@ OSStatus ProxyAudioDevice::GetDevicePropertyData(AudioServerPlugInDriverRef inDr
             //    depends on the scope requested.
             switch (inAddress->mScope) {
                 case kAudioObjectPropertyScopeGlobal:
+                    DebugMsg("DBG:1 !!!!!!!!!!");
                     //    global scope means return all objects
                     if (theNumberItemsToFetch > 4) {
                         theNumberItemsToFetch = 4;
@@ -2791,10 +2792,12 @@ OSStatus ProxyAudioDevice::GetDevicePropertyData(AudioServerPlugInDriverRef inDr
                     break;
 
                 case kAudioObjectPropertyScopeInput:
+                    DebugMsg("DBG:2 !!!!!!!!!!");
                     theNumberItemsToFetch = 0;
                     break;
 
                 case kAudioObjectPropertyScopeOutput:
+                    DebugMsg("DBG:3 !!!!!!!!!!");
                     //    output scope means just the objects on the output side
                     if (theNumberItemsToFetch > 4) {
                         theNumberItemsToFetch = 4;
@@ -3018,14 +3021,38 @@ OSStatus ProxyAudioDevice::GetDevicePropertyData(AudioServerPlugInDriverRef inDr
             //    Calculate the number of items that have been requested. Note that this
             //    number is allowed to be smaller than the actual size of the list. In such
             //    case, only that number of items will be returned
+            
+            //    Look at the custom AudioObjectIDs enum object
+            //      enum {                                                                        Control? | Index
+            //            kObjectID_PlugIn                      = kAudioObjectPlugInObject,         [No]
+            //            kObjectID_Box                         = 2,                                [No]
+            //            kObjectID_Device                      = 3,                                [No]
+            //
+            //            kObjectID_Stream_Input                = 4,                                [No]
+            //            kObjectID_Volume_Input_Master         = 5,                                [Yes]   [Index:0]
+            //            kObjectID_Mute_Input_Master           = 6,                                [Yes]   [Index:1]
+            //
+            //            kObjectID_Stream_Output               = 7,                                [No]
+            //            kObjectID_Volume_Output_L             = 8,                                [Yes]   [Index:2]
+            //            kObjectID_Volume_Output_R             = 9,                                [Yes]   [Index:3]
+            //            kObjectID_Mute_Output_Master          = 10,                               [Yes]   [Index:4]
+            //            kObjectID_DataSource_Output_Master    = 11                                [Yes]   [Index:5]
+            //    The task here is return all AudioObjectIDs which is a control type, so if
+            //    we have more control properties added, be sure to check this method!
+            
+            
             theNumberItemsToFetch = inDataSize / sizeof(AudioObjectID);
-            if (theNumberItemsToFetch > 4) {
-                theNumberItemsToFetch = 4;
+            if (theNumberItemsToFetch > 6) {
+                theNumberItemsToFetch = 6;
             }
-
+            
             //    fill out the list with as many objects as requested, which is everything
             for (theItemIndex = 0; theItemIndex < theNumberItemsToFetch; ++theItemIndex) {
-                ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Output_L + theItemIndex;
+                if (theItemIndex < 2) {
+                    ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Input_Master + theItemIndex;
+                }else{
+                    ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Output_L + theItemIndex;
+                }
             }
 
             //    report how much we wrote
