@@ -524,7 +524,11 @@ class ProxyAudioDevice {
     Float32 gVolume_Input_Value = 0.0;
     bool gMute_Output_Mute = false;
     bool gMute_Input_Mute = false;
+    
+    //    sampled with 32 bit Float for audio  frame(4 bytes)
     const UInt32 gDevice_BytesPerFrameInChannel = 4;
+    
+    //    2ch in device
     const UInt32 gDevice_ChannelsPerFrame = 2;
     const UInt32 gDevice_SafetyOffset = 0;
 };

@@ -602,6 +602,10 @@ OSStatus ProxyAudioDevice::Initialize(AudioServerPlugInDriverRef inDriver, Audio
     theHostClockFrequency *= 1000000000.0;
     gDevice_HostTicksPerFrame = theHostClockFrequency / gDevice_SampleRate;
 
+    //    init the device's input buffer, later the incoming proxied device's audio
+    //    buffer will be store inside this ringbuffer.
+    //    note total size of this ring buffer is 2(ch) * 4(32 bit float) * 88200
+    //    = 705600 bytes
     inputBuffer = new AudioRingBuffer(gDevice_BytesPerFrameInChannel * gDevice_ChannelsPerFrame, 88200);
     workBuffer = new Byte[gDevice_BytesPerFrameInChannel * gDevice_ChannelsPerFrame * kDevice_RingBufferSize * 2];
 
@@ -5444,13 +5448,19 @@ OSStatus ProxyAudioDevice::DoIOOperation(AudioServerPlugInDriverRef inDriver,
     //    we receive the system's audio during the read-input phase and store it in our ring buffer.
     //    Then in the write-output phase (technically, the ProcessOutput and WriteMix phases) we process
     //    the data and write from our ring buffer to our output stream. By "process" I just mean that we
-    //    apply the per-app volume, keep track of whether the audio is audible or not, and other things like that.
+    //    apply the per-app volume, keep track of whether the audio is audible or not, and other things like
+    //    that.
     
     
     if (inOperationID == kAudioServerPlugInIOOperationReadInput) {
         memset(ioMainBuffer, 0, inIOBufferFrameSize * 8);
+        // Copy the buffers stored in
+//        memcpy(ioMainBuffer, gRingBuffer + ringBufferFrameLocationStart * gDevice_ChannelsPerFrame, firstPartFrameSize * gDevice_ChannelsPerFrame * sizeof(Float32));
+//        memcpy((Float32*)ioMainBuffer + firstPartFrameSize * gDevice_ChannelsPerFrame, gRingBuffer, secondPartFrameSize * gDevice_ChannelsPerFrame * sizeof(Float32));
+        
 
     } else if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
+        //    Puts data into device's ringbuffer('inputBuffer')
         if (inputBuffer) {
             CAMutex::Locker locker(IOMutex);
 
