@@ -3051,7 +3051,7 @@ OSStatus ProxyAudioDevice::GetDevicePropertyData(AudioServerPlugInDriverRef inDr
                 if (theItemIndex < 2) {
                     ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Input_Master + theItemIndex;
                 }else{
-                    ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Output_L + theItemIndex;
+                    ((AudioObjectID *)outData)[theItemIndex] = kObjectID_Volume_Output_L + (theItemIndex - 2);
                 }
             }
 
@@ -5439,7 +5439,14 @@ OSStatus ProxyAudioDevice::DoIOOperation(AudioServerPlugInDriverRef inDriver,
                    Done,
                    "DoIOOperation: bad stream ID");
 
-    //    clear the buffer if this iskAudioServerPlugInIOOperationReadInput
+    //    During each IO cycle, the HAL calls us for each phase of the cycle
+    //    we support--reading input, writing output, etc. When the user has our device set as default,
+    //    we receive the system's audio during the read-input phase and store it in our ring buffer.
+    //    Then in the write-output phase (technically, the ProcessOutput and WriteMix phases) we process
+    //    the data and write from our ring buffer to our output stream. By "process" I just mean that we
+    //    apply the per-app volume, keep track of whether the audio is audible or not, and other things like that.
+    
+    
     if (inOperationID == kAudioServerPlugInIOOperationReadInput) {
         memset(ioMainBuffer, 0, inIOBufferFrameSize * 8);
 
