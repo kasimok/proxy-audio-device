@@ -3624,7 +3624,7 @@ OSStatus ProxyAudioDevice::GetStreamPropertyData(AudioServerPlugInDriverRef inDr
                            Done,
                            "GetStreamPropertyData: not enough space for the return value of "
                            "kAudioStreamPropertyStartingChannel for the stream");
-            *((UInt32 *)outData) = 0;
+            *((UInt32 *)outData) = gDevice_SafetyOffset;
             *outDataSize = sizeof(UInt32);
             break;
 
@@ -5197,6 +5197,9 @@ OSStatus ProxyAudioDevice::StartIO(AudioServerPlugInDriverRef inDriver,
         gDevice_ElapsedTicks = 0;
         outputAccumulatedRateRatio = 0.0;
         outputAccumulatedRateRatioSamples = 0;
+        
+        // allocate ring buffer
+        gRingBuffer = (Float32 *)calloc(kRing_Buffer_Frame_Size * kNumber_Of_Channels, sizeof(Float32));
     } else {
         //    IO is already running, so just bump the counter
         ++gDevice_IOIsRunning;
@@ -5242,6 +5245,7 @@ OSStatus ProxyAudioDevice::StopIO(AudioServerPlugInDriverRef inDriver,
         } else if (gDevice_IOIsRunning == 1) {
             //    We need to stop the hardware, which in this case means that there's nothing to do.
             gDevice_IOIsRunning = 0;
+            free(gRingBuffer);
         } else {
             //    IO is still running, so just bump the counter
             --gDevice_IOIsRunning;
@@ -5424,10 +5428,26 @@ OSStatus ProxyAudioDevice::DoIOOperation(AudioServerPlugInDriverRef inDriver,
     //    This is called to actuall perform a given operation. For this device, all we need to do is
     //    clear the buffer for the ReadInput operation.
 
-#pragma unused(inClientID, ioSecondaryBuffer)
+    #pragma unused(inClientID, ioSecondaryBuffer)
 
     //    declare the local variables
     OSStatus theAnswer = 0;
+    
+    // Calculate the ring buffer offsets and splits.
+    UInt64 mSampleTime = inOperationID == kAudioServerPlugInIOOperationReadInput ? inIOCycleInfo->mInputTime.mSampleTime : inIOCycleInfo->mOutputTime.mSampleTime;
+    UInt32 ringBufferFrameLocationStart = mSampleTime % kRing_Buffer_Frame_Size;
+    UInt32 firstPartFrameSize = kRing_Buffer_Frame_Size - ringBufferFrameLocationStart;
+    UInt32 secondPartFrameSize = 0;
+    
+    if (firstPartFrameSize >= inIOBufferFrameSize) {
+        firstPartFrameSize = inIOBufferFrameSize;
+    } else {
+        secondPartFrameSize = inIOBufferFrameSize - firstPartFrameSize;
+    }
+    
+    // Keep track of last outputSampleTime and the cleared buffer status.
+    static Float64 lastOutputSampleTime = 0;
+    static Boolean isBufferClear = true;
 
     //    check the arguments
     FailWithAction(inDriver != gAudioServerPlugInDriverRef,
@@ -5451,16 +5471,33 @@ OSStatus ProxyAudioDevice::DoIOOperation(AudioServerPlugInDriverRef inDriver,
     //    apply the per-app volume, keep track of whether the audio is audible or not, and other things like
     //    that.
     
-    
     if (inOperationID == kAudioServerPlugInIOOperationReadInput) {
-        memset(ioMainBuffer, 0, inIOBufferFrameSize * 8);
-        // Copy the buffers stored in
-//        memcpy(ioMainBuffer, gRingBuffer + ringBufferFrameLocationStart * gDevice_ChannelsPerFrame, firstPartFrameSize * gDevice_ChannelsPerFrame * sizeof(Float32));
-//        memcpy((Float32*)ioMainBuffer + firstPartFrameSize * gDevice_ChannelsPerFrame, gRingBuffer, secondPartFrameSize * gDevice_ChannelsPerFrame * sizeof(Float32));
+        DebugMsg("ProxyAudio: IO kAudioServerPlugInIOOperationReadInput");
         
-
-    } else if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
-        //    Puts data into device's ringbuffer('inputBuffer')
+        // If mute is one let's just fill the buffer with zeros or if there's no apps outputing audio
+        if (gMute_Output_Mute || lastOutputSampleTime - inIOBufferFrameSize < inIOCycleInfo->mInputTime.mSampleTime) {
+            // Clear the ioMainBuffer
+            vDSP_vclr((Float32 *)ioMainBuffer, 1, inIOBufferFrameSize * kNumber_Of_Channels);
+            
+            // Clear the ring buffer.
+            if (!isBufferClear) {
+                vDSP_vclr(gRingBuffer, 1, kRing_Buffer_Frame_Size * kNumber_Of_Channels);
+                isBufferClear = true;
+            }
+        } else {
+            // Copy the buffers.
+            memcpy(ioMainBuffer, gRingBuffer + ringBufferFrameLocationStart * kNumber_Of_Channels, firstPartFrameSize * kNumber_Of_Channels * sizeof(Float32));
+            memcpy((Float32*)ioMainBuffer + firstPartFrameSize * kNumber_Of_Channels, gRingBuffer, secondPartFrameSize * kNumber_Of_Channels * sizeof(Float32));
+            
+            // Finally we'll apply the output volume to the buffer.
+//            if(kEnableVolumeControl) {
+//                vDSP_vsmul(ioMainBuffer, 1, &gVolume_Master_Value, ioMainBuffer, 1, inIOBufferFrameSize * kNumber_Of_Channels);
+//            }
+        }
+    }
+    if (inOperationID == kAudioServerPlugInIOOperationWriteMix) {
+        DebugMsg("ProxyAudio: IO kAudioServerPlugInIOOperationWriteMix");
+        // For output to device, Puts data into device's ringbuffer('inputBuffer')
         if (inputBuffer) {
             CAMutex::Locker locker(IOMutex);
 
@@ -5470,6 +5507,23 @@ OSStatus ProxyAudioDevice::DoIOOperation(AudioServerPlugInDriverRef inDriver,
             lastInputBufferFrameSize = inIOBufferFrameSize;
             inputCycleCount += 1;
         }
+        
+        // For output to record
+        // Overload error.
+        if (inIOCycleInfo->mCurrentTime.mSampleTime > inIOCycleInfo->mOutputTime.mSampleTime + inIOBufferFrameSize + gDevice_SafetyOffset)
+        {
+            DebugMsg("BlackHole overload error. kAudioServerPlugInIOOperationWriteMix was unable to complete opperation before the deadline. Try increasing the buffer frame size.");
+            return kAudioHardwareUnspecifiedError;
+        }
+        
+        
+        // Copy the buffers.
+        memcpy(gRingBuffer + ringBufferFrameLocationStart * kNumber_Of_Channels, ioMainBuffer, firstPartFrameSize * kNumber_Of_Channels * sizeof(Float32));
+        memcpy(gRingBuffer, (Float32*)ioMainBuffer + firstPartFrameSize * kNumber_Of_Channels, secondPartFrameSize * kNumber_Of_Channels * sizeof(Float32));
+        
+        // Save the last output time.
+        lastOutputSampleTime = inIOCycleInfo->mOutputTime.mSampleTime + inIOBufferFrameSize;
+        isBufferClear = false;
     }
 
 Done:
@@ -5502,6 +5556,8 @@ OSStatus ProxyAudioDevice::outputDeviceIOProc(AudioDeviceID inDevice,
 #pragma unused(inInputData)
 #pragma unused(inInputTime)
     CAMutex::Locker locker1(IOMutex);
+    
+    DebugMsg("ProxyAudio: IO outputDeviceIOProc");
 
     // In theory we don't need a locking mechanism here, because outputDevice will only be modified
     // while it is not playing.

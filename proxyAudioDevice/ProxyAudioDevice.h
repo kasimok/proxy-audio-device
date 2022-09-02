@@ -5,6 +5,7 @@
 #include <CoreAudio/CoreAudio.h>
 #include <vector>
 #include <atomic>
+#include <Accelerate/Accelerate.h>
 
 #include "AudioDevice.h"
 #include "CAMutex.h"
@@ -531,6 +532,12 @@ class ProxyAudioDevice {
     //    2ch in device
     const UInt32 gDevice_ChannelsPerFrame = 2;
     const UInt32 gDevice_SafetyOffset = 0;
+    
+    // gRingbuffer for input
+    Float32* gRingBuffer;
+    const UInt32 kNumber_Of_Channels = 2;
+    const UInt32 kRing_Buffer_Frame_Size = 65536 + gDevice_SafetyOffset;
+    const bool kEnableVolumeControl = true;
 };
 
 extern "C" void *ProxyAudio_Create(CFAllocatorRef inAllocator, CFUUIDRef inRequestedTypeUUID);
